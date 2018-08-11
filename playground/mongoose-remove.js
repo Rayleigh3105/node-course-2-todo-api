@@ -11,38 +11,14 @@ if ( !ObjectID.isValid( id ) ) {
     console.log('ID is not valid')
 }
 
-User.findById({
-    _id: id
-}).then( ( user ) => {
-    if ( !user ) {
-        return console.log('Unable to find user')
-    }
+// remove is like find
+// Todo.remove({}).then ( (result ) => {
+//     console.log( result )
+// });
 
-    console.log(JSON.stringify((user, undefined, 2)))
-}, ( e ) => {
-    console.log( e );
-});
+// findOneAndRemove
 
-//
-// // Find - gets array
-// Todo.find( {
-//     _id: id
-// }).then( ( todos ) => {
-//     console.log('Todos', todos)
-// });
-//
-// // FINDONE - gets object
-// Todo.findOne({
-//     _id: id
-// }).then( ( todo ) => {
-//     console.log('Todo', todo)
-// });
-//
-// Todo.findById( id ).then( ( todo ) => {
-//     if ( !todo ) {
-//         return console.log('ID not found');
-//     }
-//     console.log('Todo', todo)
-// }).catch( ( e ) => {
-//     console.log( e )
-// });
+// findbyIdAndRemove
+Todo.findByIdAndRemove("5b6602d300f34b0564a02c5e").then( ( todo ) => {
+    console.log( todo )
+} )
