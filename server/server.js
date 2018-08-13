@@ -4,6 +4,7 @@ const _ = require('lodash');
 var express = require('express');
 var bodyParser = require('body-parser');
 const { ObjectID } = require('mongodb');
+const cors = require('cors')
 
 // LOCAL
 var { mongoose } = require('./db/mongoose').mongoose;
@@ -15,7 +16,7 @@ var app = express();
 const port = process.env.PORT || 3000;
 
 // Setup Middleware
-app.use( bodyParser.json() );
+app.use( bodyParser.json(), cors( {origin: '*'}));
 
 // Setup Route POST
 app.post( '/todos', ( req, res ) => {
@@ -34,7 +35,7 @@ app.post( '/todos', ( req, res ) => {
 // Setup Route GET todos
 app.get( '/todos', ( req, res ) => {
     Todo.find().then( ( todos ) => {
-        res.send( { todos } );
+        res.send( todos );
     }, ( e ) => {
         res.status( 400 ).send( e );
     })
@@ -67,7 +68,7 @@ app.delete('/todos/:id', ( req, res) => {
     }
     Todo.findByIdAndRemove(id).then( ( todo ) => {
         if ( todo ) {
-            res.status( 200 ).send( { todo } );
+            res.status( 200 ).send( todo );
         } else  {
             res.status( 404).send();
         }
