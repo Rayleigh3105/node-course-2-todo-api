@@ -15,13 +15,8 @@ var app = express();
 
 const port = process.env.PORT || 3000;
 
-const corsOpt = {
-    origin: 'http://localhost:3000',
-    credentials: true,
-};
-
 // Setup Middleware
-app.use( bodyParser.json(), cors(corsOpt));
+app.use( bodyParser.json(), cors( {origin: '*'}));
 
 // Setup Route POST
 app.post( '/todos', ( req, res ) => {
@@ -114,15 +109,17 @@ app.patch('/todos/:id', ( req, res ) => {
 });
 
 app.post('/users', ( req, res ) => {
-    var body = _.pick(req.body, ['email', 'password']);
-    var user = new User(body);
+    var body = _.pick( req.body, [ 'email', 'password']);
+    var user = new User( body );
 
-    user.save().then(() => {
+
+    // SAVE INPUT FROM POSTMAN
+    user.save().then( () => {
         return user.generateAuthToken();
-    }).then((token) => {
-        res.header('x-auth', token).send(user);
-    }).catch((e) => {
-        res.status(400).send(e);
+    }).then( ( token ) => {
+        res.header( 'x-auth', token ).send( user );
+    }).catch(( e ) => {
+        res.status( 400 ).send( e );
     })
 });
 
