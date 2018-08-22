@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "export NODE_ENV=test && mocha server/**/*.test.js",
+    "test-windows": "SET \"NODE_ENV=test\" && mocha server/**/*.test.js",
+    "test-mac": "export NODE_ENV=test && mocha server/**/*.test.js",
     "test-watch": "nodemon --exec 'npm test'",
     "start": "node server/server.js"
   },
@@ -21,7 +22,7 @@
     "express": "^4.14.0",
     "jsonwebtoken": "^7.1.9",
     "lodash": "^4.15.0",
-    "mocha": "^5.2.0",
+    "mocha": "^2.3.0",
     "mongodb": "^2.2.5",
     "mongoose": "^4.5.9",
     "supertest": "^3.1.0",
