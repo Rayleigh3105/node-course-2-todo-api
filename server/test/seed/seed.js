@@ -1,57 +1,54 @@
-const { ObjectID } = require('mongodb');
-const { Todo } = require('./../../model/todo');
-const { User } = require('./../../model/user');
+const {ObjectID} = require('mongodb');
 const jwt = require('jsonwebtoken');
 
+const {Todo} = require('./../../model/todo');
+const {User} = require('./../../model/user');
 
 const userOneId = new ObjectID();
-const userTw0Id = new ObjectID();
-
+const userTwoId = new ObjectID();
 const users = [{
     _id: userOneId,
-    email: 'moritz.vogt@vogges.de',
+    email: 'andrew@example.com',
     password: 'userOnePass',
     tokens: [{
         access: 'auth',
-        token: jwt.sign( {_id: userOneId, access: 'auth'}, 'abc123').toString()
+        token: jwt.sign({_id: userOneId, access: 'auth'}, process.env.JWT_SECRET).toString()
     }]
 }, {
-    _id: userTw0Id,
-    email: 'moritz.vogt@test.de',
+    _id: userTwoId,
+    email: 'jen@example.com',
     password: 'userTwoPass',
     tokens: [{
         access: 'auth',
-        token: jwt.sign( {_id: userTw0Id, access: 'auth'}, 'abc123').toString()
+        token: jwt.sign({_id: userTwoId, access: 'auth'}, process.env.JWT_SECRET).toString()
     }]
 }];
 
-// Create Mock data -> Creates two todos
 const todos = [{
     _id: new ObjectID(),
     text: 'First test todo',
     _creator: userOneId
-},{
+}, {
     _id: new ObjectID(),
     text: 'Second test todo',
     completed: true,
     completedAt: 333,
-    _creator: userTw0Id
-}]
-const populateTodos = ( done ) => {
-    // WIPES WHOLE DATABASE
-    Todo.remove( {} ).then( () => {
-        Todo.insertMany( todos ) ;
-    }).then( () => done () );
+    _creator: userTwoId
+}];
+
+const populateTodos = (done) => {
+    Todo.remove({}).then(() => {
+        return Todo.insertMany(todos);
+    }).then(() => done());
 };
 
+const populateUsers = (done) => {
+    User.remove({}).then(() => {
+        var userOne = new User(users[0]).save();
+        var userTwo = new User(users[1]).save();
 
-const populateUsers = ( done ) => {
-    User.remove( {} ).then( () => {
-        var userOne = new User( users[0] ).save();
-        var userTwo = new User( users[1] ).save();
+        return Promise.all([userOne, userTwo])
+    }).then(() => done());
+};
 
-        return Promise.all([ userOne, userTwo ])
-    }).then( () => done() );
-}
-
-module.exports = { todos, populateTodos, users, populateUsers };
+module.exports = {todos, populateTodos, users, populateUsers};
