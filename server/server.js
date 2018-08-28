@@ -134,6 +134,10 @@ app.patch('/todos/:id', authenticate, ( req, res ) => {
 // POST /users
 app.post('/users', async ( req, res ) => {
     try {
+        res.header("access-control-expose-headers",
+            ",x-auth"
+            +",Content-Length"
+        );
         var body = _.pick( req.body, [ 'email', 'password']);
         var user = new User( body );
 
