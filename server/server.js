@@ -152,6 +152,10 @@ app.post('/users', async ( req, res ) => {
 // Post /users/login
 app.post('/users/login', async ( req, res ) => {
     try {
+        res.header("access-control-expose-headers",
+            ",x-auth"
+            +",Content-Length"
+        );
         const body = _.pick( req.body, [ 'email', 'password']);
 
         const user = await User.findByCredentials( body.email, body.password);
