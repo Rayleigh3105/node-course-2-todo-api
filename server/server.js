@@ -5,6 +5,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 const { ObjectID } = require('mongodb');
 const cors = require('cors');
+var moment = require('moment');
 
 // LOCAL
 var { mongoose } = require('./db/mongoose').mongoose;
@@ -107,7 +108,9 @@ app.patch('/todos/:id', authenticate, ( req, res ) => {
     }
 
     if (_.isBoolean( body.completed ) && body.completed) {
-        body.completedAt = new Date().getTime();
+        var date = new Date().getTime();
+        var formattedTime = moment( date ).format('D MMMM YY');
+        body.completedAt = formattedTime;
     } else {
         body.completed = false;
         body.completedAt = null;
@@ -125,7 +128,7 @@ app.patch('/todos/:id', authenticate, ( req, res ) => {
             return res.status( 404 ).send();
         }
 
-        res.send( { todo } );
+        res.send( todo );
     }).catch( ( e ) => {
         res.status( 400 ).send()
     })
