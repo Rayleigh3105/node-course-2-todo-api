@@ -11,6 +11,8 @@ var moment = require('moment');
 var { mongoose } = require('./db/mongoose').mongoose;
 var { Todo } = require('./model/todo');
 var { User } = require('./model/user');
+var { Categorie } = require('./model/categorie');
+
 var { authenticate } = require('./middleware/authenticate');
 
 var app = express();
@@ -19,6 +21,19 @@ const port = process.env.PORT || 3000;
 
 // Setup Middleware
 app.use( bodyParser.json(), cors( {origin: '*'}));
+
+app.post('/categorie', authenticate, ( req, res ) => {
+   var categorie = new Categorie({
+       text: req.body.text,
+       _creator:req.user._id
+   });
+
+   categorie.save().then( ( doc ) => {
+       res.send( doc );
+   }, ( e ) => {
+       res.status( 400 ).send( e );
+   })
+});
 
 // Setup Route POST
 app.post( '/todos', authenticate, ( req, res ) => {
