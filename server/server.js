@@ -29,7 +29,11 @@ app.post('/categorie', authenticate, ( req, res ) => {
    });
 
    categorie.save().then( ( doc ) => {
-       res.send( doc );
+       res.header("access-control-expose-headers",
+           ",x-categorie"
+           +",Content-Length"
+       );
+       res.header( 'x-categorie', categorie.text ).send( doc );
    }, ( e ) => {
        res.status( 400 ).send( e );
    })
@@ -39,6 +43,7 @@ app.post('/categorie', authenticate, ( req, res ) => {
 app.post( '/todos', authenticate, ( req, res ) => {
     var todo = new Todo({
         text: req.body.text,
+        categorie: req.headers.categorie,
         _creator: req.user._id
     });
 
@@ -59,7 +64,8 @@ app.get('/users/me', authenticate, ( req, res ) => {
 // Setup Route GET todos
 app.get( '/todos', authenticate, ( req, res ) => {
     Todo.find({
-        _creator: req.user._id
+        _creator: req.user._id,
+        categorie: req.header('x-categorie')
     }).then( ( todos ) => {
         res.send( todos );
     }, ( e ) => {
@@ -78,7 +84,9 @@ app.get( '/todos/:id', authenticate, ( req, res ) => {
 
    Todo.findOne( {
        _id: id,
-       _creator: req.user._id
+       _creator: req.user._id,
+       categorie: req.header('x-categorie')
+
    }).then( ( todo ) => {
        if ( todo ) {
            res.send( todo );

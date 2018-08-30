@@ -8,6 +8,12 @@ var Todo = mongoose.model('Todo', {
         minLength: 1,
         trim: true
     },
+    categorie: {
+        type: String,
+        minLength: 1,
+        required: true,
+        trim: true
+    },
     completed: {
         type: Boolean,
         default: false,
@@ -20,6 +26,7 @@ var Todo = mongoose.model('Todo', {
         type: mongoose.Schema.Types.ObjectId,
         required: true
     }
+
 });
 
 module.exports = { Todo }
