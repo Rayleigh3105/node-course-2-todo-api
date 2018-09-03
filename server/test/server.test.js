@@ -5,6 +5,7 @@ const { ObjectID } = require('mongodb');
 const { app } = require('./../server');
 const { Todo } = require('./../model/todo');
 const { User } = require('./../model/user');
+const { Categorie } = require('./../model/categorie');
 const { todos, populateTodos, users, populateUsers, categories, populateCategories } = require('./seed/seed');
 
 beforeEach( populateUsers );
@@ -14,15 +15,20 @@ beforeEach( populateTodos );
 
 describe('POST /todos', () => {
     it('should create a new todo', ( done ) =>  {
-        var text = 'Test todo text';
-        var cate
+          var text = 'Test todo text';
+          var categorie = 'Food';
         request( app )
             .post('/todos')
             .set('x-auth', users[0].tokens[0].token)
-            .send( {text} )
+            .send( {
+                text,
+                categorie
+            })
             .expect( 200 )
             .expect( ( res ) => {
                 expect( res.body.text ).toBe( text );
+                expect( res.body.categorie ).toBe( categorie );
+
             })
             .end( ( err, res ) => {
                 if ( err ) {
@@ -61,6 +67,7 @@ describe('GET /todos', () => {
         request(app)
             .get('/todos')
             .set('x-auth', users[0].tokens[0].token)
+            .set('x-categorie', todos[0].categorie)
             .expect( 200 )
             .expect( ( res ) => {
                 expect(res.body.length).toBe( 1 );
@@ -75,6 +82,7 @@ describe('GET /todos/:id', () => {
         request(app)
             .get(`/todos/${todos[0]._id.toHexString()}`)
             .set('x-auth', users[0].tokens[0].token)
+            .set('x-categorie', todos[0].categorie)
             .expect( 200 )
             .expect( ( res ) => {
                 expect(res.body.text).toBe( todos[0].text );
@@ -181,14 +189,14 @@ describe('PATCH /todos/:id', () => {
             .patch(`/todos/${hexId}`)
             .send( {
                 completed: true,
-                text
+                text,
             })
             .set('x-auth', users[0].tokens[0].token)
             .expect( 200 )
             .expect( ( res ) => {
-                expect( res.body.todo.text ).toBe( text);
-                expect( res.body.todo.completed).toBe( true );
-                expect( res.body.todo.completedAt).toBeA( 'string' );
+                expect( res.body.text ).toBe( text );
+                expect( res.body.completed).toBe( true );
+                expect( res.body.completedAt).toBeA( 'string' );
             })
             .end( done )
     });
@@ -197,11 +205,12 @@ describe('PATCH /todos/:id', () => {
         var hexId = todos[0]._id.toHexString();
         var text = "Updated text";
 
+
         request(app)
             .patch(`/todos/${hexId}`)
             .send( {
                 completed: true,
-                text
+                text,
             })
             .set('x-auth', users[1].tokens[0].token)
             .expect( 404 )
@@ -217,14 +226,13 @@ describe('PATCH /todos/:id', () => {
             .send( {
                 completed: false,
                 text
-
             })
             .set('x-auth', users[0].tokens[0].token)
             .expect( 200 )
             .expect( ( res ) => {
-                expect( res.body.todo.text ).toBe( text);
-                expect( res.body.todo.completed).toBe( false );
-                expect( res.body.todo.completedAt).toNotExist();
+                expect( res.body.text ).toBe( text);
+                expect( res.body.completed).toBe( false );
+                expect( res.body.completedAt).toNotExist();
             })
             .end( done )
     });
@@ -379,53 +387,146 @@ describe('DELETE /users/me/token', () => {
             } );
 
     })
-
-
 });
 
-describe('POST /users', () => {
+describe('POST /categorie', () => {
     it('should create a categorie ',  ( done ) => {
 
-        var text = "Categorie1"
+        var text = "Food";
 
         request( app )
-            .post( '/users' )
-            .send({email, password})
+            .post( '/categorie' )
+            .send({text})
+            .set('x-auth', users[0].tokens[0].token)
             .expect( 200 )
             .expect( ( res ) => {
-                expect( res.headers['x-auth']).toExist();
-                expect( res.body._id).toExist();
-                expect( res.body.email).toBe( email );
+                expect( res.body.text).toBe( text );
             })
             .end( ( err ) => {
                 if ( err ) {
                     return done( err )
                 }
 
-                User.findOne( { email } ).then( ( user ) => {
-                    expect( user ).toExist();
-                    expect( user.password ).toNotBe( password );
+                Categorie.findOne( { text } ).then( ( categorie ) => {
+                    expect( categorie ).toExist();
                     done();
                 })
             } );
 
     });
 
-    it('should return validation errors if request invalid ',  ( done ) => {
-        var email = 'Moritzvogges.de';
-        var password = '123mb';
-
+    it('should not create Categorie with invalid body data ',  ( done ) => {
         request( app )
             .post( '/users' )
-            .send({email, password})
+            .send({})
             .expect( 400 )
-            .expect( ( res ) => {
-                expect( res.headers['x-auth']).toNotExist();
-                expect( res.body._id).toNotExist();
-                expect( res.body.email).toNotExist();
+            .end( ( err, res ) => {
+                if ( err ) {
+                    return done( err );
+                }
+
+                Categorie.find().then( ( categorie ) => {
+                    expect( categories.length ).toBe( 2 );
+                    done();
+                }).catch( ( err ) => done( err ) )
             })
+    });
+
+});
+
+describe('GET /categorie', () => {
+    it('should get all categories ',  ( done ) => {
+
+        request( app )
+            .get( '/categorie' )
+            .set('x-auth', users[0].tokens[0].token)
+            .expect( 200 )
+            .expect( ( res ) => {
+                expect(res.body.length).toBe( 1 );
+            })
+            .end( done )
+
+    });
+});
+
+
+describe('PATCH /categorie/:id', () => {
+    it('should update categorie ',  ( done ) => {
+        var text = "UPdated Categorie ";
+        var hexId = categories[0]._id.toHexString();
+
+        request( app )
+            .patch( `/categorie/${hexId}` )
+            .send({text})
+            .set('x-auth', users[0].tokens[0].token)
+            .expect( 200 )
+            .expect( ( res ) => {
+                expect(res.body.text).toBe( text );
+            })
+            .end( done )
+
+    });
+});
+
+describe('DELETE /categorie/:id', () => {
+    it('should remove a categorie', ( done ) => {
+        var hexId = categories[1]._id.toHexString();
+
+        request( app )
+            .delete(`/categorie/${hexId}`)
+            .set('x-auth', users[1].tokens[0].token)
+            .expect( 200 )
+            .expect( ( res ) => {
+                expect( res.body._id ).toBe( hexId )
+            } )
+            .end( ( err, res ) => {
+                if ( err ) {
+                    return done( err )
+                }
+
+                Categorie.findById( hexId ).then( ( categorie ) => {
+                    expect( categorie ).toNotExist();
+                    done();
+                }).catch(( err ) => done( err ))
+
+            })
+    });
+
+    it('should not remove a categorie', ( done ) => {
+        var hexId = categories[0]._id.toHexString();
+
+        request( app )
+            .delete(`/categorie/${hexId}`)
+            .set('x-auth', users[1].tokens[0].token)
+            .expect( 404 )
+            .end( ( err, res ) => {
+                if ( err ) {
+                    return done( err )
+                }
+
+                Categorie.findById( hexId ).then( ( categorie ) => {
+                    expect( categorie ).toExist();
+                    done();
+                }).catch(( err ) => done( err ))
+
+            })
+    });
+
+    it('should return 404 if todo not found', ( done ) => {
+        var id = new ObjectID();
+        request(app)
+            .delete(`/categorie/${id.toHexString()}`)
+            .set('x-auth', users[1].tokens[0].token)
+            .expect( 404 )
             .end( done );
     });
 
+    it('should return 404 if object id is invalid', ( done ) => {
+        request(app)
+            .delete(`/categorie/242343534564645756`)
+            .set('x-auth', users[1].tokens[0].token)
+            .expect( 404 )
+            .end( done );
+    });
 });
 

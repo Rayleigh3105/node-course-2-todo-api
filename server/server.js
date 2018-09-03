@@ -8,7 +8,6 @@ const cors = require('cors');
 var moment = require('moment');
 
 // LOCAL
-var { mongoose } = require('./db/mongoose').mongoose;
 var { Todo } = require('./model/todo');
 var { User } = require('./model/user');
 var { Categorie } = require('./model/categorie');
@@ -73,19 +72,42 @@ app.patch('/categorie/:id', authenticate, ( req, res ) => {
             return res.status( 404 ).send();
         }
 
-        res.send( categorie );
+        res.header( 'x-categorie', body).send( categorie );
     }).catch( ( e ) => {
-        res.status( 400 ).send()
+        res.status( 400 ).send( e )
     })
 
 
+});
+
+// DELETE
+app.delete('/categorie/:id', authenticate, async ( req, res) => {
+    const id = req.params.id;
+    if ( !ObjectID.isValid( id ) ) {
+        return res.status( 404 ).send()
+    }
+
+    try {
+        const categorie = await Categorie.findOneAndRemove({
+            _id: id,
+            _creator: req.user._id
+        });
+
+        if ( categorie ) {
+            res.status( 200 ).send( categorie );
+        } else  {
+            res.status( 404).send();
+        }
+    } catch (e) {
+        res.status( 400 ).send()
+    }
 });
 
 // Setup Route POST
 app.post( '/todos', authenticate, ( req, res ) => {
     var todo = new Todo({
         text: req.body.text,
-        categorie: req.headers.categorie,
+        categorie: req.body.categorie,
         _creator: req.user._id
     });
 
@@ -101,7 +123,7 @@ app.post( '/todos', authenticate, ( req, res ) => {
 
 app.get('/users/me', authenticate, ( req, res ) => {
         res.send( req.user );
-})
+});
 
 // Setup Route GET todos
 app.get( '/todos', authenticate, ( req, res ) => {
@@ -159,7 +181,7 @@ app.delete('/todos/:id', authenticate, async ( req, res) => {
             res.status( 404).send();
         }
     } catch (e) {
-        res.statu( 400 ).send()
+        res.status( 400 ).send()
     }
 });
 
