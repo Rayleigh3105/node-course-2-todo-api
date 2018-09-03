@@ -8,6 +8,7 @@ const cors = require('cors');
 var moment = require('moment');
 
 // LOCAL
+var { mongoose } = require('./db/mongoose').mongoose;
 var { Todo } = require('./model/todo');
 var { User } = require('./model/user');
 var { Categorie } = require('./model/categorie');
