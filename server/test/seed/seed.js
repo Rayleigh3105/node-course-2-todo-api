@@ -3,9 +3,11 @@ const jwt = require('jsonwebtoken');
 
 const {Todo} = require('./../../model/todo');
 const {User} = require('./../../model/user');
+const { Categorie } = require('./../../model/categorie');
 
 const userOneId = new ObjectID();
 const userTwoId = new ObjectID();
+
 const users = [{
     _id: userOneId,
     email: 'andrew@example.com',
@@ -24,13 +26,25 @@ const users = [{
     }]
 }];
 
+const categories = [{
+    _id: new ObjectID(),
+    text: "Categorie1",
+    _creator: userOneId
+},{
+    _id: new ObjectID(),
+    text: "Categorie2",
+    _creator: userTwoId
+}];
+
 const todos = [{
     _id: new ObjectID(),
     text: 'First test todo',
-    _creator: userOneId
+    _creator: userOneId,
+    categorie: categories[0]._id
 }, {
     _id: new ObjectID(),
     text: 'Second test todo',
+    categorie: categories[1]._id,
     completed: true,
     completedAt: 333,
     _creator: userTwoId
@@ -51,4 +65,13 @@ const populateUsers = (done) => {
     }).then(() => done());
 };
 
-module.exports = {todos, populateTodos, users, populateUsers};
+const populateCategories = ( done ) => {
+    Categorie.remove({}).then( () => {
+        var categorieOne = new Categorie(categories[0]).save();
+        var categorieTwo = new Categorie(categories[1]).save()
+
+        return Promise.all([categorieOne,categorieTwo])
+    }).then( () => done())
+};
+
+module.exports = {todos, populateTodos, users, populateUsers,categories,  populateCategories};

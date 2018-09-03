@@ -39,6 +39,48 @@ app.post('/categorie', authenticate, ( req, res ) => {
    })
 });
 
+app.get('/categorie', authenticate, ( req, res ) => {
+    Categorie.find({
+        _creator: req.user._id,
+    }).then( ( categorie ) => {
+        if ( categorie ) {
+            res.send( categorie );
+        } else {
+            res.status( 404 ).send( );
+        }
+    }).catch( ( e ) => {
+        res.status( 400 ).send();
+    })
+});
+
+app.patch('/categorie/:id', authenticate, ( req, res ) => {
+    var id = req.params.id;
+    var body = _.pick( req.body, ['text']);
+
+    if ( !ObjectID.isValid( id ) ) {
+        return res.status( 404 ).send()
+    }
+
+    Categorie.findOneAndUpdate( {
+        _id: id,
+        _creator: req.user._id
+    },{
+        $set: body
+    }, {
+        new: true
+    }).then( ( categorie ) => {
+        if ( !categorie ) {
+            return res.status( 404 ).send();
+        }
+
+        res.send( categorie );
+    }).catch( ( e ) => {
+        res.status( 400 ).send()
+    })
+
+
+});
+
 // Setup Route POST
 app.post( '/todos', authenticate, ( req, res ) => {
     var todo = new Todo({

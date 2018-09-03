@@ -5,15 +5,17 @@ const { ObjectID } = require('mongodb');
 const { app } = require('./../server');
 const { Todo } = require('./../model/todo');
 const { User } = require('./../model/user');
-const { todos, populateTodos, users, populateUsers } = require('./seed/seed');
+const { todos, populateTodos, users, populateUsers, categories, populateCategories } = require('./seed/seed');
 
 beforeEach( populateUsers );
+beforeEach( populateCategories );
 beforeEach( populateTodos );
 
 
 describe('POST /todos', () => {
     it('should create a new todo', ( done ) =>  {
         var text = 'Test todo text';
+        var cate
         request( app )
             .post('/todos')
             .set('x-auth', users[0].tokens[0].token)
@@ -380,3 +382,50 @@ describe('DELETE /users/me/token', () => {
 
 
 });
+
+describe('POST /users', () => {
+    it('should create a categorie ',  ( done ) => {
+
+        var text = "Categorie1"
+
+        request( app )
+            .post( '/users' )
+            .send({email, password})
+            .expect( 200 )
+            .expect( ( res ) => {
+                expect( res.headers['x-auth']).toExist();
+                expect( res.body._id).toExist();
+                expect( res.body.email).toBe( email );
+            })
+            .end( ( err ) => {
+                if ( err ) {
+                    return done( err )
+                }
+
+                User.findOne( { email } ).then( ( user ) => {
+                    expect( user ).toExist();
+                    expect( user.password ).toNotBe( password );
+                    done();
+                })
+            } );
+
+    });
+
+    it('should return validation errors if request invalid ',  ( done ) => {
+        var email = 'Moritzvogges.de';
+        var password = '123mb';
+
+        request( app )
+            .post( '/users' )
+            .send({email, password})
+            .expect( 400 )
+            .expect( ( res ) => {
+                expect( res.headers['x-auth']).toNotExist();
+                expect( res.body._id).toNotExist();
+                expect( res.body.email).toNotExist();
+            })
+            .end( done );
+    });
+
+});
+
