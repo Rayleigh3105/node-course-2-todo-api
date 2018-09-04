@@ -53,16 +53,11 @@ app.get('/categorie', authenticate, ( req, res ) => {
     })
 });
 
-app.patch('/categorie/:id', authenticate, ( req, res ) => {
-    var id = req.params.id;
+app.patch('/categorie', authenticate, ( req, res ) => {
     var body = _.pick( req.body, ['text']);
 
-    if ( !ObjectID.isValid( id ) ) {
-        return res.status( 404 ).send()
-    }
-
     Categorie.findOneAndUpdate( {
-        _id: id,
+        text: req.header('x-categorie'),
         _creator: req.user._id
     },{
         $set: body
@@ -82,15 +77,10 @@ app.patch('/categorie/:id', authenticate, ( req, res ) => {
 });
 
 // DELETE
-app.delete('/categorie/:id', authenticate, async ( req, res) => {
-    const id = req.params.id;
-    if ( !ObjectID.isValid( id ) ) {
-        return res.status( 404 ).send()
-    }
-
+app.delete('/categorie', authenticate, async ( req, res) => {
     try {
         const categorie = await Categorie.findOneAndRemove({
-            _id: id,
+            text: req.header('x-categorie'),
             _creator: req.user._id
         });
 
