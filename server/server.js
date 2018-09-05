@@ -79,10 +79,14 @@ app.patch('/categorie', authenticate, ( req, res ) => {
 // DELETE
 app.delete('/categorie', authenticate, async ( req, res) => {
     try {
+
+
         const categorie = await Categorie.findOneAndRemove({
             text: req.header('x-categorie'),
             _creator: req.user._id
         });
+
+
 
         if ( categorie ) {
             res.status( 200 ).send( categorie );
@@ -90,8 +94,26 @@ app.delete('/categorie', authenticate, async ( req, res) => {
             res.status( 404).send();
         }
     } catch (e) {
-        res.status( 400 ).send()
+        res.status( 400 ).send( e )
     }
+});
+
+app.delete('/todos/categorie', authenticate, async ( req,res ) => {
+    try {
+        const todo = await Todo.remove({
+            _creator: req.user._id,
+            categorie: req.header('x-categorie'),
+        });
+
+        if ( todo ) {
+            res.status( 200 ).send( todo );
+        } else  {
+            res.status( 404).send( );
+        }
+    } catch (e) {
+        res.status( 400 ).send( e );
+    }
+
 });
 
 // Setup Route POST
