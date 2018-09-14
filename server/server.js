@@ -35,7 +35,7 @@ app.post('/categorie', authenticate, ( req, res ) => {
        );
        res.header( 'x-categorie', categorie.text ).send( doc );
    }, ( e ) => {
-       res.status( 400 ).send( e );
+       res.status( 400 ).send("Can´t create categorie (categorie must be unique)");
    })
 });
 
@@ -248,7 +248,7 @@ app.post('/users', async ( req, res ) => {
         const token = await user.generateAuthToken();
         res.header( 'x-auth', token ).send( user );
     } catch (e) {
-        res.status(400).send(e);
+        res.status(400).send("User can not be created (Invalid Email/Password or User already exists)");
     }
 });
 
@@ -265,7 +265,7 @@ app.post('/users/login', async ( req, res ) => {
         const token = await user.generateAuthToken()
         res.header( 'x-auth', token ).send( user );
     } catch (e) {
-        res.status( 400 ).send();
+        res.status( 400 ).send("Something went wrong during LogIn (Invalid Email/Password), try again");
     }
 });
 

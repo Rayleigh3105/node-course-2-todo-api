@@ -7,7 +7,8 @@ var CategorieSchema = new mongoose.Schema({
         type: String,
         required: true,
         minLength: 1,
-        trim: true
+        trim: true,
+        unique: true,
     },
     _creator: {
         type: mongoose.Schema.Types.ObjectId,
