@@ -242,9 +242,9 @@ app.post('/users', async ( req, res ) => {
 
     // SAVE INPUT FROM POSTMAN
     user.save().then( () => {
-        // return user.generateAuthToken();
+        return user.generateAuthToken();
     }).then( ( token ) => {
-        res.send( user );
+        res.header( 'x-auth', token ).send( user );
     }).catch(( e ) => {
         res.status( 400 ).send( e );
     })
