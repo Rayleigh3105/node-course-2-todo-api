@@ -236,18 +236,20 @@ app.patch('/todos/:id', authenticate, ( req, res ) => {
 
 // POST /users
 app.post('/users', async ( req, res ) => {
-    var body = _.pick( req.body, [ 'email', 'password']);
-    var user = new User( body );
+    try {
+        res.header("access-control-expose-headers",
+            ",x-auth"
+            +",Content-Length"
+        );
+        var body = _.pick( req.body, [ 'email', 'password']);
+        var user = new User( body );
 
-
-    // SAVE INPUT FROM POSTMAN
-    user.save().then( () => {
-        return user.generateAuthToken();
-    }).then( ( token ) => {
+        await user.save();
+        const token = await user.generateAuthToken();
         res.header( 'x-auth', token ).send( user );
-    }).catch(( e ) => {
-        res.status( 400 ).send( e );
-    })
+    } catch (e) {
+        res.status(400).send("User can not be created (Invalid Email/Password or User already exists)");
+    }
 });
 
 // Post /users/login
